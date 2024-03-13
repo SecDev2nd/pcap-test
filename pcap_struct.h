@@ -98,3 +98,9 @@ struct libnet_tcp_hdr
     u_int16_t th_sum;         /* checksum */
     u_int16_t th_urp;         /* urgent pointer */
 };
+
+
+void usage();
+void print_mac(struct libnet_ethernet_hdr *eth_hdr);
+void print_tcp_port(struct libnet_tcp_hdr *tcp_header);
+void print_inet_ntop(struct libnet_ipv4_hdr *header);
