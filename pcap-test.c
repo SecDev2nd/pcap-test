@@ -8,32 +8,29 @@ void usage() {
 	printf("sample: pcap-test wlan0\n");
 }
 
-
-void print_mac(u_int8_t *m){
-	printf("%02x:%02x:%02x:%02x:%02x:%02x",m[0],m[1],m[2],m[3],m[4],m[5]);
+void print_mac2(struct libnet_ethernet_hdr *eth_hdr){
+	u_int8_t *src = eth_hdr->ether_shost;
+	u_int8_t *dst = eth_hdr->ether_dhost;
+	printf("MAC : %02x:%02x:%02x:%02x:%02x:%02x ---> %02x:%02x:%02x:%02x:%02x:%02x\n",
+				src[0],src[1],src[2],src[3],src[4],src[5],
+				dst[0],dst[1],dst[2],dst[3],dst[4],dst[5]);
 }
 
-void print_ip(struct libnet_ipv4_hdr *header)
-{
-	printf("IP : %s -> ",inet_ntoa(header->ip_src));
-	printf("%s\n",inet_ntoa(header->ip_dst));
+void print_tcp_port(struct libnet_tcp_hdr *tcp_header){
+	printf("TCP PORT : %u ---> %u\n", tcp_header->th_sport,tcp_header->th_dport);
 }
 
-void print_ip2(struct libnet_ipv4_hdr *header) {
+void print_inet_ntop(struct libnet_ipv4_hdr *header) {
     char src_ip[INET_ADDRSTRLEN];
     char dst_ip[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(header->ip_src), src_ip, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, &(header->ip_dst), dst_ip, INET_ADDRSTRLEN);
 
-    printf("IP : %s\n", src_ip);
-    printf("%s\n", dst_ip);
+    printf("IP : %s ---> %s \n", src_ip,dst_ip);
 }
 
-bool check_tcp(u_int8_t type){
-	if(type != 6){
-		return false;
-	}
-	return true;
+bool check_tcp(u_int8_t type) {
+    return type == 6;
 }
 
 typedef struct {
@@ -91,11 +88,21 @@ int main(int argc, char* argv[]) {
 		struct libnet_ethernet_hdr *eth_hdr = (struct libnet_ethernet_hdr *)packet;
 		struct libnet_ipv4_hdr *ip_hdr = (struct libnet_ipv4_hdr *)(packet+sizeof(*eth_hdr));
 		struct libnet_tcp_hdr *tcp_hdr = (struct libnet_tcp_hdr *)(packet+sizeof(*ip_hdr)+sizeof(*eth_hdr));
+		
+
+		if (check_tcp(ip_hdr->ip_p)){ //*ip_p -> protocol */
+
+			printf("%u bytes captured\n", header->caplen);
+			printf("Protocol : TCP\n");
+			print_mac2(eth_hdr);
+			print_tcp_port(tcp_hdr);
+			print_inet_ntop(ip_hdr);
+			printf("\n");
+		}
+		
 
 
-
-
-		printf("%u bytes captured\n", header->caplen);
+		
 	}
 
 	pcap_close(pcap);
