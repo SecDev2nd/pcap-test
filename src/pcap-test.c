@@ -90,15 +90,15 @@ int main(int argc, char* argv[]) {
 		// TCP packet이 잡히는 경우 "ETH + IP + TCP + DATA" 로 구성이 된다
 		// 그렇다면 전체 패킷에서 ETH+IP+TCP만큼 뺴주면 DATA가 나오지 않을까
 		// ETH헤더 : ETH프레임에서의 MAC헤더가 14바이트
-		// IP헤더랑 tcp헤더 오프셋은 * 4
+		// IP헤더랑 tcp헤더 오프셋은 32bit(4byte)단위로 나타내기 때문에 *4
 		struct libnet_ethernet_hdr *eth_hdr = (struct libnet_ethernet_hdr *)packet;
 		struct libnet_ipv4_hdr *ip_hdr = (struct libnet_ipv4_hdr *)(packet+sizeof(*eth_hdr));
 		struct libnet_tcp_hdr *tcp_hdr = (struct libnet_tcp_hdr *)(packet+sizeof(*ip_hdr)+sizeof(*eth_hdr));
 		
 
 		if (check_tcp(ip_hdr->ip_p)) { //*ip_p -> protocol */
-			u_int32_t total_length = header->caplen;
-			u_int32_t header_length = 14 + (ip_hdr->ip_hl) * 4 + (tcp_hdr->th_off) * 4;
+			u_int32_t total_length = header->caplen; //캡쳐된 패킷 길이(실제 길이랑은 다름)
+			u_int32_t header_length = 14 + (ip_hdr->ip_hl) * 4 + (tcp_hdr->th_off) * 4; //헤더의 총 길이
 			u_int32_t payload_length = total_length - header_length;
 			
 			printf("%u bytes captured\n", total_length);
