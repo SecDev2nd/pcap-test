@@ -8,27 +8,29 @@ void usage() {
 	printf("syntax: pcap-test <interface>\n");
 	printf("sample: pcap-test wlan0\n");
 }
-
-void print_mac(struct libnet_ethernet_hdr *eth_hdr){
-	u_int8_t *src = eth_hdr->ether_shost;
-	u_int8_t *dst = eth_hdr->ether_dhost;
-	printf("MAC : %02x:%02x:%02x:%02x:%02x:%02x ---> %02x:%02x:%02x:%02x:%02x:%02x\n",
-				src[0],src[1],src[2],src[3],src[4],src[5],
-				dst[0],dst[1],dst[2],dst[3],dst[4],dst[5]);
+void print_mac(struct libnet_ethernet_hdr *eth_hdr) {
+    u_int8_t *src = eth_hdr->ether_shost;
+    u_int8_t *dst = eth_hdr->ether_dhost;
+    
+    printf("MAC \t: %02x:%02x:%02x:%02x:%02x:%02x \t---> %02x:%02x:%02x:%02x:%02x:%02x\n",
+           src[0], src[1], src[2], src[3], src[4], src[5],
+           dst[0], dst[1], dst[2], dst[3], dst[4], dst[5]);
 }
 
-void print_tcp_port(struct libnet_tcp_hdr *tcp_header){
-	printf("TCP PORT : %u \t\t\t---> \t%u\n", ntohs(tcp_header->th_sport),ntohs(tcp_header->th_dport));
+void print_tcp_port(struct libnet_tcp_hdr *tcp_header) {
+    printf("PORT \t: %u     \t\t---> %u\n", ntohs(tcp_header->th_sport), ntohs(tcp_header->th_dport));
 }
 
 void print_inet_ntop(struct libnet_ipv4_hdr *header) {
     char src_ip[INET_ADDRSTRLEN];
     char dst_ip[INET_ADDRSTRLEN];
+    
     inet_ntop(AF_INET, &(header->ip_src), src_ip, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, &(header->ip_dst), dst_ip, INET_ADDRSTRLEN);
-
-    printf("IP : %s \t---> %s \t\n", src_ip,dst_ip);
+    
+    printf("IP \t: %s \t---> %s \t\n", src_ip, dst_ip);
 }
+
 
 bool check_tcp(u_int8_t type) {
     return type == 6;
@@ -94,33 +96,31 @@ int main(int argc, char* argv[]) {
 		struct libnet_tcp_hdr *tcp_hdr = (struct libnet_tcp_hdr *)(packet+sizeof(*ip_hdr)+sizeof(*eth_hdr));
 		
 
-		if (check_tcp(ip_hdr->ip_p)){ //*ip_p -> protocol */
-
+		if (check_tcp(ip_hdr->ip_p)) { //*ip_p -> protocol */
 			u_int32_t total_length = header->caplen;
-			u_int32_t header_length = 14 + (ip_hdr->ip_hl)*4 + (tcp_hdr->th_off)*4;
+			u_int32_t header_length = 14 + (ip_hdr->ip_hl) * 4 + (tcp_hdr->th_off) * 4;
 			u_int32_t payload_length = total_length - header_length;
+			
 			printf("%u bytes captured\n", total_length);
 			printf("Protocol : TCP\n");
 			print_mac(eth_hdr);
 			print_tcp_port(tcp_hdr);
 			print_inet_ntop(ip_hdr);
-			printf("Payload : %dByte\n",payload_length);
-			if (payload_length == 0){
-				
+			printf("Payload : %dByte\n", payload_length);
+			
+			if (payload_length == 0) {
 				continue;
-			}
-			else if(payload_length < 10){
-				for(int i = header_length; i < header_length + payload_length; i++){
-					printf("|%02x",packet[i]);
+			} else if (payload_length < 10) {
+				for (int i = header_length; i < header_length + payload_length; i++) {
+					printf("|%02x", packet[i]);
+				}
+			} else {
+				for (int i = header_length; i < header_length + 10; i++) {
+					printf("|%02x", packet[i]);
 				}
 			}
-			else{
-				for(int i = header_length; i< header_length + 10; i++){
-					printf("|%02x",packet[i]);
-				}
-			}
-			printf("|\n");
-			printf("\n");
+			
+			printf("|\n\n");
 		}
 		
 
