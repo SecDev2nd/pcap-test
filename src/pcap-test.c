@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
 		// TCP packet이 잡히는 경우 "ETH + IP + TCP + DATA" 로 구성이 된다
 		// 그렇다면 전체 패킷에서 ETH+IP+TCP만큼 뺴주면 DATA가 나오지 않을까
 		// ETH헤더 : ETH프레임에서의 MAC헤더가 14바이트
-		// IP헤더랑 tcp헤더 오프셋은 왜 *4를 해주는걸까....
+		// IP헤더랑 tcp헤더 오프셋은 * 4
 		struct libnet_ethernet_hdr *eth_hdr = (struct libnet_ethernet_hdr *)packet;
 		struct libnet_ipv4_hdr *ip_hdr = (struct libnet_ipv4_hdr *)(packet+sizeof(*eth_hdr));
 		struct libnet_tcp_hdr *tcp_hdr = (struct libnet_tcp_hdr *)(packet+sizeof(*ip_hdr)+sizeof(*eth_hdr));

@@ -1,2 +1,2 @@
 # pcap-test
-Usage) ./pcap-test eth0
+Usage) sudo ./pcap-test eth0
